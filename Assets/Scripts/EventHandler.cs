@@ -12,7 +12,11 @@ namespace Assets.Scripts
         {
             OnBuildMenuToggle,
             ChooseTower_Ranged,
-            ChooseTower_Melee
+            ChooseTower_Melee,
+
+            Wave_SpawnNew,
+            Wave_EnemyDied,
+            Wave_Finished
         }
 
         private Dictionary<Events, List<Action>> Subscriptions { get; set; }

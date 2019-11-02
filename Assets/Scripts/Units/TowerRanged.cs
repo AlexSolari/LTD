@@ -21,7 +21,7 @@ namespace Assets.Scripts.Units
             AttackSpeed = 85;
             Damage = 150;
             Range = 25;
-            AlarmRange = 30;
+            AlarmRange = 40;
             AttackType = AttackType.Ranged;
         }
 

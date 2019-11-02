@@ -223,6 +223,7 @@ namespace Assets.Scripts.Units
         public override void OnDeath()
         {
             Player.Current.Gold += 1;
+            EventHandler.Current.Dispatch(EventHandler.Events.Wave_EnemyDied);
         }
     }
 }

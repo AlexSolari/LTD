@@ -29,8 +29,10 @@ namespace Assets.Scripts.Building
             EventHandler.Current.SubscribeToEvent(EventHandler.Events.ChooseTower_Melee, () => {
                 towerToSpawn = meleeTower;
                 type = typeof(Tower);
-
             });
+
+            EventHandler.Current.SubscribeToEvent(EventHandler.Events.OnBuildMenuToggle, () => gameObject.SetActive(!gameObject.activeSelf));
+            gameObject.SetActive(false);
         }
 
         private void FixedUpdate()
@@ -40,6 +42,9 @@ namespace Assets.Scripts.Building
 
         public void Spawn()
         {
+            if (type == null)
+                return;
+
             var price = TowerPriceTable.Prices[type];
             if (Player.Current.Gold < price)
                 return;

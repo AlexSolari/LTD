@@ -34,22 +34,6 @@ namespace Assets.Scripts.AI
 
             unit.ProcessAI();
             PossibleTargets.Clear();
-
-            if (Input.GetMouseButtonDown(0))
-            {
-                var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-                RaycastHit hit;
-                if (Physics.Raycast(ray, out hit, 10000f, LayerMask.GetMask("BuildHandlers")))
-                {
-                    var gameObjectThatWasHit = hit.collider.gameObject;
-                    var component = gameObjectThatWasHit.GetComponent<BuildSelectorHandler>();
-
-                    if (component != null)
-                    {
-                        component.Spawn();
-                    }
-                }
-            }
         }
 
         protected abstract GameObject FindTarget(GameObject[] possibleTargets, int range);
