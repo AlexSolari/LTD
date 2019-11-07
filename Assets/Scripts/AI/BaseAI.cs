@@ -26,6 +26,9 @@ namespace Assets.Scripts.AI
                 unit = GetComponent<UnitImplementationContainer>().Unit;
             }
 
+            if (unit == null)
+                return;
+
             var orderedTargets = GameObject.FindGameObjectsWithTag(SearchTag);
             var target = FindTarget(orderedTargets, unit.AlarmRange);
 

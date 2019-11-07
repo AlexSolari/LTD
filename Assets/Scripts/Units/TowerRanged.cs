@@ -10,10 +10,8 @@ using UnityEngine.AI;
 
 namespace Assets.Scripts.Units
 {
-    public class TowerRanged : UnitBase
+    public class TowerRanged : Unit
     {
-        public GameObject projectile;
-
         public TowerRanged()
         {
             CurrentHP = 100;
@@ -23,33 +21,9 @@ namespace Assets.Scripts.Units
             Range = 25;
             AlarmRange = 40;
             AttackType = AttackType.Ranged;
-        }
 
-        public override void FireProjectile(int damage, Unit targetUnit)
-        {
-            base.FireProjectile(damage, targetUnit);
-            var spawnPoint = transform.position;
-            spawnPoint.y += 3;
-            var instance = Instantiate(projectile, spawnPoint, Quaternion.identity);
-            var controller = instance.GetComponent<ProjectileController>();
-
-            controller.Damage = Damage;
-            controller.Emiter = this;
-            controller.Target = targetUnit;
-        }
-
-        private void FixedUpdate()
-        {
-            attackCooldown -= 1;
-
-            if (CurrentHP <= 0)
-            {
-                Destroy();
-            }
-        }
-
-        public override void OnDeath()
-        {
+            Level = 2;
+            Value = 4;
         }
     }
 }

@@ -9,6 +9,8 @@ TagManager:
   - UI_HP
   - BuildMenu
   - UI_Gold
+  - UI_Wave
+  - BuildPosition
   layers:
   - Default
   - TransparentFX

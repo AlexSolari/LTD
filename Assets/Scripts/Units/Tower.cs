@@ -9,30 +9,19 @@ using UnityEngine.AI;
 
 namespace Assets.Scripts.Units
 {
-    public class Tower : UnitBase
+    public class Tower : Unit
     {
         public Tower()
         {
             CurrentHP = 500;
             MaxHP = CurrentHP;
-            AttackSpeed = 25;
+            AttackSpeed = 70;
             Damage = 75;
             Range = 7;
-            AlarmRange = 20;
-        }
+            AlarmRange = 40;
 
-        private void FixedUpdate()
-        {
-            attackCooldown -= 1;
-
-            if (CurrentHP <= 0)
-            {
-                Destroy();
-            }
-        }
-
-        public override void OnDeath()
-        {
+            Level = 1;
+            Value = 3;
         }
     }
 }

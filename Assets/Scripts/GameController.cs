@@ -7,25 +7,27 @@ using UnityEngine.UI;
 
 public class GameController : MonoBehaviour
 {
-    public GameObject enemyToSpawn;
     public GameObject[] spawnRegions;
 
     private int enemiesAlive = 0;
     private int waveNumber = 0;
+    private bool waveInProgress = false;
 
     // Start is called before the first frame update
     void Start()
     {
-        StartCoroutine(SpawnWave());
+        StartCoroutine(InitiateWaveStart());
 
         Assets.Scripts.EventHandler.Current.SubscribeToEvent(Assets.Scripts.EventHandler.Events.Wave_Finished, () =>
         {
-            StartCoroutine(SpawnWave());
+            waveInProgress = false;
+            StartCoroutine(InitiateWaveStart());
         });
 
         Assets.Scripts.EventHandler.Current.SubscribeToEvent(Assets.Scripts.EventHandler.Events.Wave_SpawnNew, () =>
         {
-            Spawn();
+            waveInProgress = true;
+            SpawnWave();
         });
 
         Assets.Scripts.EventHandler.Current.SubscribeToEvent(Assets.Scripts.EventHandler.Events.Wave_EnemyDied, () =>
@@ -38,10 +40,26 @@ public class GameController : MonoBehaviour
         });
     }
 
+    private void ClearSpawnedTowers()
+    {
+        var buildSpots = GameObject.FindGameObjectsWithTag("BuildPosition");
+
+        foreach (var spot in buildSpots)
+        {
+            var handler = spot.GetComponent<BuildSelectorHandler>();
+
+            if (handler.spawnedTower != null)
+            {
+                handler.spawnedTower.SetActive(false);
+                Destroy(handler.spawnedTower);
+            }
+        }
+    }
+
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetMouseButtonDown(0))
+        if (!waveInProgress && Input.GetMouseButtonDown(0))
         {
             var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
@@ -52,19 +70,40 @@ public class GameController : MonoBehaviour
 
                 if (component != null)
                 {
-                    component.Spawn();
+                    component.Build();
                 }
             }
         }
     }
 
-    private IEnumerator SpawnWave()
+    private IEnumerator InitiateWaveStart()
     {
-        yield return new WaitForSeconds(5f);
+        ClearSpawnedTowers();
+        for (var countdown = 10; countdown >= 0; countdown--)
+        {
+            PrepareForNewWave(countdown);
+            yield return new WaitForSeconds(1f);
+        }
+        SpawnTowers();
         Assets.Scripts.EventHandler.Current.Dispatch(Assets.Scripts.EventHandler.Events.Wave_SpawnNew);
     }
 
-    void Spawn()
+    private void SpawnTowers()
+    {
+        var buildSpots = GameObject.FindGameObjectsWithTag("BuildPosition");
+
+        foreach (var spot in buildSpots)
+        {
+            var handler = spot.GetComponent<BuildSelectorHandler>();
+
+            if (handler.buildedTower != null)
+            {
+                handler.Spawn();
+            }
+        }
+    }
+
+    void SpawnWave()
     {
         waveNumber += 1;
         SetWave(waveNumber);
@@ -74,7 +113,7 @@ public class GameController : MonoBehaviour
         {
             var controller = item.GetComponent<SpawnerController>();
 
-            controller.Spawn(enemyToSpawn);
+            controller.SpawnWave();
         }   
     }
 
@@ -90,7 +129,11 @@ public class GameController : MonoBehaviour
 
     internal void SetWave(int number)
     {
-        GameObject.FindGameObjectWithTag("UI_Wave").GetComponent<Text>().text = $"Wave: {number}";
+        GameObject.FindGameObjectWithTag("UI_Wave").GetComponent<Text>().text = $"Wave #{number}";
     }
 
+    internal void PrepareForNewWave(int number)
+    {
+        GameObject.FindGameObjectWithTag("UI_Wave").GetComponent<Text>().text = $"Next wave in {number}";
+    }
 }

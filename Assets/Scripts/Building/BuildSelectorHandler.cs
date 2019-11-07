@@ -12,16 +12,27 @@ namespace Assets.Scripts.Building
 {
     public class BuildSelectorHandler : MonoBehaviour
     {
-        public int cooldown = 0;
+        public GameObject spawnedTower;
+        public GameObject buildedTower;
+
+        public Material AvailibleMaterial;
+        public Material OccupiedMaterial;
+
         public GameObject towerToSpawn;
+        public Type typeOfTower;
 
         public GameObject meleeTower;
         public GameObject rangedTower;
 
         private Type type;
+        private bool isVisible = true;
+        private new MeshRenderer renderer;
+        private GameObject towerDummy;
 
         private void Awake()
         {
+            renderer = GetComponent<MeshRenderer>();
+
             EventHandler.Current.SubscribeToEvent(EventHandler.Events.ChooseTower_Ranged, () => {
                 towerToSpawn = rangedTower;
                 type = typeof(TowerRanged);
@@ -31,36 +42,84 @@ namespace Assets.Scripts.Building
                 type = typeof(Tower);
             });
 
-            EventHandler.Current.SubscribeToEvent(EventHandler.Events.OnBuildMenuToggle, () => gameObject.SetActive(!gameObject.activeSelf));
-            gameObject.SetActive(false);
+            EventHandler.Current.SubscribeToEvent(EventHandler.Events.OnBuildMenuToggle, () => ToggleVisibility());
+
+            EventHandler.Current.SubscribeToEvent(EventHandler.Events.Wave_Finished, ToggleDummy);
+            EventHandler.Current.SubscribeToEvent(EventHandler.Events.Wave_SpawnNew, ToggleDummy);
+
+            ToggleVisibility();
+        }
+
+        private void ToggleDummy()
+        {
+            if (buildedTower != null)
+            {
+                var spawnPos = new Vector3(transform.position.x, transform.position.y + 2, transform.position.z);
+
+                if (towerDummy == null)
+                {
+                    towerDummy = Instantiate(buildedTower, spawnPos, Quaternion.identity);
+                }
+                else
+                {
+                    Destroy(towerDummy);
+                }
+            }
+        }
+
+        private void ToggleVisibility()
+        {
+            var currentColor = renderer.material.color;
+
+            if (!isVisible)
+            {
+                renderer.material.color = new Color(currentColor.r, currentColor.g, currentColor.b, 0.3f);
+            }
+            else
+            {
+                renderer.material.color = new Color(currentColor.r, currentColor.g, currentColor.b, 0f);
+            }
+
+            isVisible = !isVisible;
         }
 
         private void FixedUpdate()
         {
-            cooldown -= 1;
+        }
+
+        public void Build()
+        {
+            if (!isVisible)
+                return;
+
+            var price = Tables.TowerPrices[type];
+
+            if (type == null)
+                return;
+
+            if (Player.Current.Gold < price)
+                return;
+
+            if (buildedTower != null)
+                return;
+
+            typeOfTower = type;
+            buildedTower = towerToSpawn;
+            Player.Current.Gold -= price;
+            GetComponent<MeshRenderer>().material = OccupiedMaterial;
+
+            ToggleDummy();
         }
 
         public void Spawn()
         {
-            if (type == null)
-                return;
-
-            var price = TowerPriceTable.Prices[type];
-            if (Player.Current.Gold < price)
-                return;
-
-            if (cooldown > 0)
-                return;
-
             var spawnPos = new Vector3(transform.position.x, transform.position.y + 2, transform.position.z);
 
-            var instance = Instantiate(towerToSpawn, spawnPos, Quaternion.identity);
-            var container = instance.GetComponent<UnitImplementationContainer>();
+            spawnedTower = Instantiate(buildedTower, spawnPos, Quaternion.identity);
+            var container = spawnedTower.GetComponent<UnitImplementationContainer>();
 
-            cooldown = 200;
-            MethodInfo castMethod = typeof(UnitImplementationContainer).GetMethod("InitializeWith").MakeGenericMethod(type);
+            MethodInfo castMethod = typeof(UnitImplementationContainer).GetMethod("InitializeWith").MakeGenericMethod(typeOfTower);
             castMethod.Invoke(container, new object[] { });
-            Player.Current.Gold -= price;
         }
     }
 }

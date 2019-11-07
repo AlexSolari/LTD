@@ -26,12 +26,7 @@ namespace Assets.Scripts.Units
             Unit.animator = gameObject.GetComponentInChildren<Animator>();
             Unit.gameObject = gameObject;
             Unit.navMeshAgent = GetComponent<NavMeshAgent>();
-
-            if (Unit is TowerRanged)
-            {
-                (Unit as TowerRanged).projectile = projectile;
-            }
-
+            Unit.projectile = projectile;
             Unit.Instantiate = Instantiate;
             Initialized = true;
         }
@@ -39,6 +34,9 @@ namespace Assets.Scripts.Units
         private void FixedUpdate()
         {
             if (!Initialized)
+                return;
+
+            if (Unit == null)
                 return;
 
             if (!UnitInitialized)

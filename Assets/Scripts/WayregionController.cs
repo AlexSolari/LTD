@@ -21,23 +21,22 @@ public class WayregionController : MonoBehaviour
         if (container == null)
             return;
 
-        if (isFinal)
+        var unit = container.Unit;
+
+        if (unit != null && unit.gameObject.tag == "Unit")
         {
-            Destroy(other.gameObject);
-
-            Player.Current.Health -= 1;
-        }
-
-        if (next != null)
-        {
-            var unit = container.Unit;
-
-            if (unit != null && unit.gameObject.tag == "Unit")
+            if (isFinal)
             {
-                unit.Waypoint = next;
-                if (unit.CurrentCommand == Assets.Scripts.Common.Command.Move || unit.CurrentCommand == Assets.Scripts.Common.Command.MoveAttackingEverythingOnTheWay)
-                    unit.IssueOrder(Assets.Scripts.Common.Command.Idle, null);
+                unit.OnDeath();
+                Destroy(other.gameObject);
+
+                Player.Current.Health -= 1;
+                return;
             }
+
+            unit.Waypoint = next;
+            if (unit.CurrentCommand == Assets.Scripts.Common.Command.Move || unit.CurrentCommand == Assets.Scripts.Common.Command.MoveAttackingEverythingOnTheWay)
+                unit.IssueOrder(Assets.Scripts.Common.Command.Idle, null);
         }
     }
 
